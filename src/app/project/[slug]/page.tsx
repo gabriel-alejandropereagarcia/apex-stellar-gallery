@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProject, projects } from "@/lib/data";
+import { getProject, projects, ledgerDaysAgo } from "@/lib/data";
 import ProjectLogo from "@/components/ProjectLogo";
 
 export function generateStaticParams() {
@@ -147,6 +147,12 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                       expirado
                     </span>
                   )}
+                  {project.hubble?.contractActivity?.[c.id] != null && (
+                    <span className="font-mono text-[10px] text-zinc-500">
+                      act. hace{" "}
+                      {ledgerDaysAgo(project.hubble.contractActivity[c.id].lastModifiedLedger)}d
+                    </span>
+                  )}
                   <span className="text-sm text-zinc-400">{c.label ?? "contrato"}</span>
                   {c.isPool && (
                     <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[11px] text-sky-300">
@@ -209,6 +215,8 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                     <th className="px-4 py-2 text-right">Trustlines</th>
                     <th className="px-4 py-2 text-right">Pagos</th>
                     <th className="px-4 py-2 text-right">Trades</th>
+                    <th className="px-4 py-2 text-right">Ops 30d</th>
+                    <th className="px-4 py-2 text-right">Cuentas 30d</th>
                     <th className="px-4 py-2 text-right">Rating</th>
                   </tr>
                 </thead>
@@ -233,6 +241,12 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-zinc-300">
                         {t.trades.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 text-right font-mono text-violet-300">
+                        {project.hubble?.tokens?.[`${t.code}-${t.issuer}`]?.ops30d?.toLocaleString() ?? "—"}
+                      </td>
+                      <td className="px-4 py-2 text-right font-mono text-violet-300">
+                        {project.hubble?.tokens?.[`${t.code}-${t.issuer}`]?.accounts30d?.toLocaleString() ?? "—"}
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-zinc-300">
                         {t.rating ?? "—"}

@@ -62,6 +62,21 @@ export interface DirInfo {
   domains: string[];
 }
 
+export interface HubbleToken {
+  ops30d: number;
+  accounts30d: number;
+}
+
+export interface HubbleContract {
+  lastModifiedLedger: number;
+  entries: number;
+}
+
+export interface HubbleInfo {
+  tokens: Record<string, HubbleToken>;
+  contractActivity: Record<string, HubbleContract>;
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -83,6 +98,7 @@ export interface Project {
   sep?: SepInfo;
   chain?: ChainInfo;
   dir?: DirInfo;
+  hubble?: HubbleInfo;
 }
 
 export interface DatasetMeta {

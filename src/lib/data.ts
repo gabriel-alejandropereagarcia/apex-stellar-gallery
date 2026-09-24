@@ -3,11 +3,13 @@ import metaJson from "@/data/meta.json";
 import enrichmentJson from "@/data/enrichment.json";
 import chainJson from "@/data/chain.json";
 import directoryJson from "@/data/directory.json";
-import type { ChainInfo, DatasetMeta, DirInfo, Project, SepInfo } from "./types";
+import hubbleJson from "@/data/hubble.json";
+import type { ChainInfo, DatasetMeta, DirInfo, HubbleInfo, Project, SepInfo } from "./types";
 
 const enrichment = enrichmentJson as Record<string, SepInfo>;
 const chain = (chainJson as { projects: Record<string, ChainInfo> }).projects;
 const directory = directoryJson as Record<string, DirInfo>;
+const hubble = (hubbleJson as { projects: Record<string, HubbleInfo> }).projects;
 
 export const chainMeta = { ledger: chainJson.ledger, generatedAt: chainJson.generatedAt };
 
@@ -16,6 +18,7 @@ export const projects = (projectsJson as Project[]).map((p) => ({
   sep: enrichment[p.slug],
   chain: chain[p.slug],
   dir: directory[p.slug],
+  hubble: hubble[p.slug],
 }));
 export const meta = metaJson as DatasetMeta;
 
@@ -33,6 +36,11 @@ export function getProject(slug: string): Project | undefined {
   return projects.find((p) => p.slug === slug);
 }
 
+/** Días aproximados desde que un ledger modificó un contrato (ledgers ~5s). */
+export function ledgerDaysAgo(lastModifiedLedger: number): number {
+  return Math.max(0, Math.round(((chainMeta.ledger - lastModifiedLedger) * 5) / 86400));
+}
+
 /** Score 0-100 de actividad verificable: contratos vivos, tokens, SEP-1, auditorías, GitHub. */
 export function activityScore(p: Project): number {
   let s = 0;
@@ -44,6 +52,12 @@ export function activityScore(p: Project): number {
       s += Math.min(15, Math.log10(t.trustlines + 1) * 4);
       s += (t.rating ?? 0) * 2;
     }
+  }
+  const h = p.hubble;
+  if (h) {
+    for (const t of Object.values(h.tokens)) s += Math.min(10, Math.log10(t.ops30d + 1) * 2);
+    const recent = Object.values(h.contractActivity).filter((a) => ledgerDaysAgo(a.lastModifiedLedger) <= 30).length;
+    s += Math.min(10, recent * 3);
   }
   if (p.sep) s += 8;
   if (p.audits.length) s += 6;
