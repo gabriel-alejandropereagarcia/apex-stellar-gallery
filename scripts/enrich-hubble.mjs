@@ -20,21 +20,30 @@ const DATA = join(ROOT, "src", "data");
 const KEY_FILE = join(ROOT, "secrets", "gcp-key.json");
 const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS ?? KEY_FILE;
 
-if (!existsSync(keyPath)) {
-  console.error(`Falta la key de GCP: ${keyPath}`);
-  console.error("  1. GCP Console -> IAM -> Service Accounts -> create (rol: BigQuery Job User)");
-  console.error("  2. Keys -> Add Key -> JSON -> guardar como secrets/gcp-key.json");
+// Si hay key JSON la usamos; si no, intentamos Application Default Credentials
+// (gcloud auth application-default login) con proyecto de env.
+const useAdc = !existsSync(keyPath);
+if (useAdc && !process.env.GOOGLE_CLOUD_PROJECT) {
+  console.error(`No hay key en ${keyPath} ni credenciales ADC configuradas.`);
+  console.error("  Opción A: bajar key JSON de la service account -> secrets/gcp-key.json");
+  console.error("  Opción B: gcloud auth application-default login && set GOOGLE_CLOUD_PROJECT=<tu-proyecto>");
   process.exit(1);
 }
 
 const args = process.argv.slice(2);
 const DRYRUN = args.includes("--dryrun");
 const FORCE = args.includes("--force");
-const DAYS = Number(args[args.indexOf("--days") + 1] ?? 30);
+const daysIdx = args.indexOf("--days");
+const DAYS = daysIdx >= 0 ? Number(args[daysIdx + 1]) : 30;
 const MAX_GB = Number(process.env.HUBBLE_MAX_GB ?? 250); // guard de costo (~$1.5/TB on-demand)
 
 const projects = JSON.parse(readFileSync(join(DATA, "projects.json"), "utf8"));
-const bq = new BigQuery({ keyFilename: keyPath });
+const keyProjectId = useAdc ? null : JSON.parse(readFileSync(keyPath, "utf8")).project_id;
+const bq = new BigQuery(
+  useAdc
+    ? { projectId: process.env.GOOGLE_CLOUD_PROJECT }
+    : { keyFilename: keyPath, projectId: keyProjectId },
+);
 const DS = "`crypto-stellar.crypto_stellar`";
 
 async function columnsOf(table) {
@@ -62,78 +71,104 @@ async function runQuery(name, query, location = "US") {
 // --- schema discovery -------------------------------------------------------------
 console.log("Descubriendo schema de Hubble…");
 const cdCols = await columnsOf("contract_data");
-const opCols = await columnsOf("history_operations");
 console.log(`  contract_data: ${[...cdCols].slice(0, 8).join(", ")}…`);
-console.log(`  history_operations: tiene asset_code=${opCols.has("asset_code")}, batch_run_date=${opCols.has("batch_run_date")}`);
 
 const out = {};
+const slot = (slug) => (out[slug] ??= { tokens: {}, contractActivity: {} });
 
-// --- 1. Contratos: última actividad en contract_data -------------------------------
 const contractIds = [
   ...new Set(projects.flatMap((p) => (p.contracts ?? []).map((c) => c.id).filter(Boolean))),
 ];
 const slugByContract = {};
 for (const p of projects) for (const c of p.contracts ?? []) if (c.id) slugByContract[c.id] = p.slug;
+const inContracts = contractIds.map((id) => `'${id}'`).join(",");
+const dateFilter = `batch_run_date >= DATE_SUB(CURRENT_DATE(), INTERVAL ${DAYS} DAY)`;
 
+// --- 1. Contratos: última actividad (contract_data) ---------------------------------
 if (cdCols.has("contract_id") && cdCols.has("last_modified_ledger") && contractIds.length) {
-  const inList = contractIds.map((id) => `'${id}'`).join(",");
   const rows = await runQuery(
     "contract_data",
     `SELECT contract_id, MAX(last_modified_ledger) AS last_mod, COUNT(*) AS entries
-     FROM ${DS}.contract_data WHERE contract_id IN (${inList}) GROUP BY contract_id`,
+     FROM ${DS}.contract_data WHERE contract_id IN (${inContracts}) GROUP BY contract_id`,
   );
-  if (rows) {
-    for (const r of rows) {
-      const slug = slugByContract[r.contract_id];
-      if (!slug) continue;
-      (out[slug] ??= { tokens: {}, contractActivity: {} }).contractActivity[r.contract_id] = {
+  for (const r of rows ?? []) {
+    const s = slugByContract[r.contract_id];
+    if (s)
+      slot(s).contractActivity[r.contract_id] = {
+        ...(slot(s).contractActivity[r.contract_id] ?? {}),
         lastModifiedLedger: Number(r.last_mod),
         entries: Number(r.entries),
       };
-    }
   }
-} else {
-  console.log("  contract_data sin columnas esperadas — se omite");
 }
 
-// --- 2. Tokens: ops + cuentas únicas últimos N días ---------------------------------
+// --- 2. Contratos: invocaciones + usuarios únicos (enriched_history_operations) -------
+{
+  const rows = await runQuery(
+    "contract-invocations",
+    `SELECT contract_id, COUNT(*) AS invokes, COUNT(DISTINCT op_source_account) AS users,
+            MAX(closed_at) AS last_used
+     FROM ${DS}.enriched_history_operations
+     WHERE ${dateFilter} AND contract_id IN (${inContracts})
+     GROUP BY contract_id`,
+  );
+  for (const r of rows ?? []) {
+    const s = slugByContract[r.contract_id];
+    if (s)
+      Object.assign(slot(s).contractActivity[r.contract_id] ??= {}, {
+        invocations30d: Number(r.invokes),
+        users30d: Number(r.users),
+        lastUsed: r.last_used?.value ?? r.last_used ?? null,
+      });
+  }
+}
+
+// --- 3. Contratos: eventos emitidos (history_contract_events) ------------------------
+{
+  const rows = await runQuery(
+    "contract-events",
+    `SELECT contract_id, COUNT(*) AS events
+     FROM ${DS}.history_contract_events
+     WHERE ${dateFilter} AND contract_id IN (${inContracts})
+     GROUP BY contract_id`,
+  );
+  for (const r of rows ?? []) {
+    const s = slugByContract[r.contract_id];
+    if (s)
+      Object.assign(slot(s).contractActivity[r.contract_id] ??= {}, {
+        events30d: Number(r.events),
+      });
+  }
+}
+
+// --- 4. Tokens: transfers + emisores únicos (token_transfers_raw) --------------------
 const tokenPairs = [];
 const slugByPair = {};
 for (const p of projects) {
   for (const t of p.tokens ?? []) {
     if (!t.code || !t.issuer) continue;
-    tokenPairs.push({ slug: p.slug, code: t.code, issuer: t.issuer });
+    tokenPairs.push(t);
     slugByPair[`${t.code}|${t.issuer}`] = p.slug;
   }
 }
-
-if (opCols.has("asset_code") && opCols.has("asset_issuer") && tokenPairs.length) {
-  const dateCol = opCols.has("batch_run_date") ? "batch_run_date" : "closed_at";
-  const dateExpr =
-    dateCol === "batch_run_date"
-      ? `batch_run_date >= DATE_SUB(CURRENT_DATE(), INTERVAL ${DAYS} DAY)`
-      : `closed_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL ${DAYS} DAY)`;
+if (tokenPairs.length) {
   const pairs = tokenPairs.map((t) => `('${t.code.replace(/'/g, "")}','${t.issuer}')`).join(",");
   const rows = await runQuery(
-    "token-ops",
-    `SELECT asset_code, asset_issuer, COUNT(*) AS ops, COUNT(DISTINCT source_account) AS accounts
-     FROM ${DS}.history_operations
-     WHERE ${dateExpr} AND asset_code IS NOT NULL
-       AND (asset_code, asset_issuer) IN (${pairs})
+    "token-transfers",
+    `SELECT asset_code, asset_issuer, COUNT(*) AS transfers,
+            COUNT(DISTINCT \`from\`) AS senders
+     FROM ${DS}.token_transfers_raw
+     WHERE ${dateFilter} AND (asset_code, asset_issuer) IN (${pairs})
      GROUP BY asset_code, asset_issuer`,
   );
-  if (rows) {
-    for (const r of rows) {
-      const slug = slugByPair[`${r.asset_code}|${r.asset_issuer}`];
-      if (!slug) continue;
-      (out[slug] ??= { tokens: {}, contractActivity: {} }).tokens[`${r.asset_code}-${r.asset_issuer}`] = {
-        ops30d: Number(r.ops),
-        accounts30d: Number(r.accounts),
+  for (const r of rows ?? []) {
+    const s = slugByPair[`${r.asset_code}|${r.asset_issuer}`];
+    if (s)
+      slot(s).tokens[`${r.asset_code}-${r.asset_issuer}`] = {
+        transfers30d: Number(r.transfers),
+        senders30d: Number(r.senders),
       };
-    }
   }
-} else {
-  console.log("  history_operations sin columnas de asset — se omite");
 }
 
 if (!DRYRUN) {

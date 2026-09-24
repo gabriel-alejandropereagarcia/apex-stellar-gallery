@@ -63,13 +63,17 @@ export interface DirInfo {
 }
 
 export interface HubbleToken {
-  ops30d: number;
-  accounts30d: number;
+  transfers30d: number;
+  senders30d: number;
 }
 
 export interface HubbleContract {
-  lastModifiedLedger: number;
-  entries: number;
+  lastModifiedLedger?: number;
+  entries?: number;
+  invocations30d?: number;
+  users30d?: number;
+  events30d?: number;
+  lastUsed?: string | null;
 }
 
 export interface HubbleInfo {

@@ -147,10 +147,18 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                       expirado
                     </span>
                   )}
-                  {project.hubble?.contractActivity?.[c.id] != null && (
+                  {project.hubble?.contractActivity?.[c.id]?.invocations30d != null && (
+                    <span
+                      className="font-mono text-[10px] text-violet-400"
+                      title={`${project.hubble.contractActivity[c.id].invocations30d} invocaciones · ${project.hubble.contractActivity[c.id].users30d ?? 0} usuarios · ${project.hubble.contractActivity[c.id].events30d ?? 0} eventos (30d)`}
+                    >
+                      {project.hubble.contractActivity[c.id].invocations30d} inv/30d
+                    </span>
+                  )}
+                  {project.hubble?.contractActivity?.[c.id]?.lastModifiedLedger != null && (
                     <span className="font-mono text-[10px] text-zinc-500">
                       act. hace{" "}
-                      {ledgerDaysAgo(project.hubble.contractActivity[c.id].lastModifiedLedger)}d
+                      {ledgerDaysAgo(project.hubble.contractActivity[c.id].lastModifiedLedger!)}d
                     </span>
                   )}
                   <span className="text-sm text-zinc-400">{c.label ?? "contrato"}</span>
@@ -215,8 +223,8 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                     <th className="px-4 py-2 text-right">Trustlines</th>
                     <th className="px-4 py-2 text-right">Pagos</th>
                     <th className="px-4 py-2 text-right">Trades</th>
-                    <th className="px-4 py-2 text-right">Ops 30d</th>
-                    <th className="px-4 py-2 text-right">Cuentas 30d</th>
+                    <th className="px-4 py-2 text-right">Transfers 30d</th>
+                    <th className="px-4 py-2 text-right">Emisores 30d</th>
                     <th className="px-4 py-2 text-right">Rating</th>
                   </tr>
                 </thead>
@@ -243,10 +251,10 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                         {t.trades.toLocaleString()}
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-violet-300">
-                        {project.hubble?.tokens?.[`${t.code}-${t.issuer}`]?.ops30d?.toLocaleString() ?? "—"}
+                        {project.hubble?.tokens?.[`${t.code}-${t.issuer}`]?.transfers30d?.toLocaleString() ?? "—"}
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-violet-300">
-                        {project.hubble?.tokens?.[`${t.code}-${t.issuer}`]?.accounts30d?.toLocaleString() ?? "—"}
+                        {project.hubble?.tokens?.[`${t.code}-${t.issuer}`]?.senders30d?.toLocaleString() ?? "—"}
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-zinc-300">
                         {t.rating ?? "—"}

@@ -55,9 +55,11 @@ export function activityScore(p: Project): number {
   }
   const h = p.hubble;
   if (h) {
-    for (const t of Object.values(h.tokens)) s += Math.min(10, Math.log10(t.ops30d + 1) * 2);
-    const recent = Object.values(h.contractActivity).filter((a) => ledgerDaysAgo(a.lastModifiedLedger) <= 30).length;
-    s += Math.min(10, recent * 3);
+    for (const t of Object.values(h.tokens)) s += Math.min(10, Math.log10(t.transfers30d + 1) * 2);
+    for (const a of Object.values(h.contractActivity)) {
+      s += Math.min(6, Math.log10((a.invocations30d ?? 0) + 1));
+      if (a.lastModifiedLedger && ledgerDaysAgo(a.lastModifiedLedger) <= 30) s += 3;
+    }
   }
   if (p.sep) s += 8;
   if (p.audits.length) s += 6;
