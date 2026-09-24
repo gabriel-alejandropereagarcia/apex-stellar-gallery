@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# APEX · Stellar Ecosystem Gallery
 
-## Getting Started
+Galería indexada del ecosistema Stellar: todos los proyectos en un solo lugar, con filtros
+por categoría/tag/región, datos de SCF, auditorías y verificación on-chain vía SEP-1.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, static export-ready) + TypeScript + Tailwind CSS 4
+- **Dataset**: [`lumenloop/stellar-ecosystem-db`](https://github.com/lumenloop/stellar-ecosystem-db)
+  (812 proyectos en YAML, open data)
+- **Enriquecimiento on-chain**: SEP-1 `stellar.toml` crawling por dominio
+
+## Quickstart
 
 ```bash
+# 1. Clonar el dataset al lado del repo (o setear ECOSYSTEM_DB)
+git clone --depth 1 https://github.com/lumenloop/stellar-ecosystem-db ../stellar-ecosystem-db
+
+# 2. Ingesta: YAML -> src/data/projects.json
+npm run ingest
+
+# 3. Enriquecimiento SEP-1 (opcional, ~752 dominios, varios minutos)
+npm run enrich
+
+# 4. Dev / build
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Pipeline de datos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+stellar-ecosystem-db ─┐
+  projects/*.yaml     │   scripts/ingest.mjs     src/data/projects.json
+  contracts/*.yaml    ┘ ───────────────────────► src/data/meta.json
+dominios de projects ── scripts/enrich-toml.mjs ──► src/data/enrichment.json
+                      (SEP-1 /.well-known/stellar.toml)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `projects.json`: catálogo normalizado (links absolutos, SCF, auditorías, tokens, contratos)
+- `enrichment.json`: por slug — org info, endpoints SEP descubiertos, currencies, validators
+- La UI mergea todo en `src/lib/data.ts` (badge `SEP-1 verificado`, sección de integración)
 
-## Learn More
+## Roadmap (siguiente nivel de indexación)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Stellar RPC / Horizon** — stats en vivo por contrato (invocaciones, TTL, holders de tokens)
+2. **Hubble (BigQuery `crypto-stellar.crypto_stellar`)** — actividad histórica, "proyecto vivo" score
+3. **StellarExpert Directory API** — addresses tagged, ratings de assets
+4. **Matriz de integración** — "este proyecto expone X endpoint/contrato/SDK" para evitar rebuilds
+5. Sync automático (GitHub Action cron → re-ingest + re-deploy)
