@@ -48,12 +48,23 @@ export default function ProjectCard({ project }: { project: Project }) {
             SEP-1
           </span>
         ) : null}
+        {project.chain && project.chain.contractsAlive > 0 ? (
+          <span
+            className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-300"
+            title={`${project.chain.contractsAlive}/${project.chain.contractsChecked} contratos vivos en mainnet`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            live
+          </span>
+        ) : null}
         {project.contracts.length ? (
           <span
             className="rounded-full bg-sky-500/15 px-2 py-0.5 font-mono text-[11px] text-sky-300"
             title={`${project.contracts.length} contratos Soroban`}
           >
-            {project.contracts.length}C
+            {project.chain
+              ? `${project.chain.contractsAlive}/${project.contracts.length}C`
+              : `${project.contracts.length}C`}
           </span>
         ) : null}
       </div>

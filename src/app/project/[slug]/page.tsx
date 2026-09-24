@@ -118,6 +118,11 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
         <section className="mt-8">
           <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">
             Contratos Soroban · {project.contracts.length}
+            {project.chain ? (
+              <span className="ml-2 text-emerald-400">
+                {project.chain.contractsAlive} vivos
+              </span>
+            ) : null}
           </h2>
           <ul className="mt-3 divide-y divide-zinc-800/60 rounded-xl border border-zinc-800/80">
             {project.contracts.map((c) =>
@@ -131,6 +136,17 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
                   >
                     {shortId(c.id)}
                   </a>
+                  {project.chain?.contractStatus?.[c.id] === "alive" && (
+                    <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-300">
+                      <span className="h-1 w-1 rounded-full bg-emerald-400" />
+                      vivo
+                    </span>
+                  )}
+                  {project.chain?.contractStatus?.[c.id] === "expired" && (
+                    <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] text-red-300">
+                      expirado
+                    </span>
+                  )}
                   <span className="text-sm text-zinc-400">{c.label ?? "contrato"}</span>
                   {c.isPool && (
                     <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[11px] text-sky-300">
@@ -176,6 +192,70 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {project.chain && (project.chain.tokens.length > 0 || project.chain.contractsChecked > 0) && (
+        <section className="mt-8">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">
+            Actividad on-chain
+          </h2>
+          {project.chain.tokens.length > 0 && (
+            <div className="mt-3 overflow-x-auto rounded-xl border border-zinc-800/80">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-800/80 text-left font-mono text-[11px] uppercase text-zinc-500">
+                    <th className="px-4 py-2">Token</th>
+                    <th className="px-4 py-2 text-right">Trustlines</th>
+                    <th className="px-4 py-2 text-right">Pagos</th>
+                    <th className="px-4 py-2 text-right">Trades</th>
+                    <th className="px-4 py-2 text-right">Rating</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {project.chain.tokens.map((t) => (
+                    <tr key={t.issuer} className="border-b border-zinc-800/40 last:border-0">
+                      <td className="px-4 py-2">
+                        <a
+                          href={`https://stellar.expert/explorer/public/asset/${t.code}-${t.issuer}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-amber-300 hover:underline"
+                        >
+                          {t.code}
+                        </a>
+                      </td>
+                      <td className="px-4 py-2 text-right font-mono text-zinc-300">
+                        {t.trustlines.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 text-right font-mono text-zinc-300">
+                        {t.payments.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 text-right font-mono text-zinc-300">
+                        {t.trades.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 text-right font-mono text-zinc-300">
+                        {t.rating ?? "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {project.dir && project.dir.tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-zinc-500">StellarExpert directory:</span>
+              {project.dir.tags.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] text-zinc-300"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

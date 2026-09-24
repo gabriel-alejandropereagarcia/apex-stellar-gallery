@@ -39,6 +39,29 @@ export interface SepInfo {
   accounts: number;
 }
 
+export interface TokenStats {
+  code: string;
+  issuer: string;
+  trustlines: number;
+  payments: number;
+  trades: number;
+  rating: number | null;
+  domain: string | null;
+}
+
+export interface ChainInfo {
+  tokens: TokenStats[];
+  contractsAlive: number;
+  contractsChecked: number;
+  contractStatus?: Record<string, "alive" | "expired" | "unknown">;
+}
+
+export interface DirInfo {
+  names: string[];
+  tags: string[];
+  domains: string[];
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -58,6 +81,8 @@ export interface Project {
   tokens: Token[];
   contracts: ContractRef[];
   sep?: SepInfo;
+  chain?: ChainInfo;
+  dir?: DirInfo;
 }
 
 export interface DatasetMeta {

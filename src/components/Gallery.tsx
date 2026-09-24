@@ -2,14 +2,16 @@
 
 import { useMemo, useState } from "react";
 import type { Project } from "@/lib/types";
+import { activityScore, isLive } from "@/lib/data";
 import ProjectCard from "./ProjectCard";
 
-type SortKey = "name" | "scf" | "contracts";
+type SortKey = "name" | "scf" | "contracts" | "activity";
 
 const SORTERS: Record<SortKey, (a: Project, b: Project) => number> = {
   name: (a, b) => a.title.localeCompare(b.title),
   scf: (a, b) => (b.scf?.total ?? 0) - (a.scf?.total ?? 0),
   contracts: (a, b) => b.contracts.length - a.contracts.length,
+  activity: (a, b) => activityScore(b) - activityScore(a),
 };
 
 export default function Gallery({
@@ -30,6 +32,8 @@ export default function Gallery({
   const [onlyScf, setOnlyScf] = useState(false);
   const [onlyAudited, setOnlyAudited] = useState(false);
   const [onlyOnchain, setOnlyOnchain] = useState(false);
+  const [onlyLive, setOnlyLive] = useState(false);
+  const [onlySep, setOnlySep] = useState(false);
   const [sort, setSort] = useState<SortKey>("name");
 
   const filtered = useMemo(() => {
@@ -42,6 +46,8 @@ export default function Gallery({
         if (onlyScf && !p.scf?.total) return false;
         if (onlyAudited && !p.audits.length) return false;
         if (onlyOnchain && !p.contracts.length && !p.tokens.length) return false;
+        if (onlyLive && !isLive(p)) return false;
+        if (onlySep && !p.sep) return false;
         if (!q) return true;
         const hay = [p.title, p.description, p.category, p.parent ?? "", ...p.tags, ...p.otherNames]
           .join(" ")
@@ -49,7 +55,7 @@ export default function Gallery({
         return hay.includes(q);
       })
       .sort(SORTERS[sort]);
-  }, [projects, query, category, tag, region, onlyScf, onlyAudited, onlyOnchain, sort]);
+  }, [projects, query, category, tag, region, onlyScf, onlyAudited, onlyOnchain, onlyLive, onlySep, sort]);
 
   const selectCls =
     "rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-violet-500/60";
@@ -86,6 +92,7 @@ export default function Gallery({
             className={selectCls}
           >
             <option value="name">A–Z</option>
+            <option value="activity">Actividad on-chain</option>
             <option value="scf">Fondos SCF</option>
             <option value="contracts">Contratos</option>
           </select>
@@ -121,6 +128,8 @@ export default function Gallery({
           ["SCF", onlyScf, setOnlyScf],
           ["Auditados", onlyAudited, setOnlyAudited],
           ["On-chain", onlyOnchain, setOnlyOnchain],
+          ["Activos ahora", onlyLive, setOnlyLive],
+          ["SEP-1", onlySep, setOnlySep],
         ].map(([label, active, setter]) => (
           <button
             key={label as string}

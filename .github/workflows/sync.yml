@@ -1,0 +1,40 @@
+name: Sync ecosystem data
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # lunes 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone ecosystem dataset
+        run: git clone --depth 1 https://github.com/lumenloop/stellar-ecosystem-db ../stellar-ecosystem-db
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Ingest + enrich
+        run: |
+          npm run ingest
+          npm run enrich
+          npm run enrich:chain
+          npm run enrich:dir
+
+      - name: Commit data updates
+        run: |
+          git config user.name "apex-data-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add src/data
+          git diff --cached --quiet || git commit -m "chore(data): sync ecosystem snapshot"
+          git push

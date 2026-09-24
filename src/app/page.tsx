@@ -5,9 +5,17 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6">
       <header className="border-b border-zinc-800/80 pb-10 pt-12">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-400">
-          apex · stellar ecosystem
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-400">
+            apex · stellar ecosystem
+          </p>
+          <a
+            href="/stats"
+            className="rounded-lg border border-zinc-800 px-3 py-1.5 font-mono text-xs text-zinc-400 transition hover:border-violet-500/50 hover:text-violet-300"
+          >
+            stats →
+          </a>
+        </div>
         <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
           Galería de proyectos Stellar
         </h1>
