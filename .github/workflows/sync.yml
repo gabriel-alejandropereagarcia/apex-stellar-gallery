@@ -24,12 +24,32 @@ jobs:
 
       - run: npm ci
 
-      - name: Ingest + enrich
+      - name: Write GCP credentials (opcional)
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          mkdir -p secrets
+          if [ -n "$GCP_SA_KEY" ]; then
+            echo "$GCP_SA_KEY" > secrets/gcp-key.json
+            echo "Key GCP escrita"
+          else
+            echo "GCP_SA_KEY no configurada — enrich:hubble se omitirá"
+          fi
+
+      - name: Ingest + public enrichers
         run: |
           npm run ingest
           npm run enrich
           npm run enrich:chain
           npm run enrich:dir
+
+      - name: Enrich Hubble (si hay credenciales)
+        run: |
+          if [ -f secrets/gcp-key.json ]; then
+            npm run enrich:hubble
+          else
+            echo "Sin secrets/gcp-key.json — skip"
+          fi
 
       - name: Commit data updates
         run: |
