@@ -42,8 +42,7 @@ export default function MatrixView({ rows }: { rows: MatrixRow[] }) {
       .sort((a, b) => b.score - a.score);
   }, [rows, query, cap, minScore]);
 
-  const cell =
-    "px-3 py-2 text-center font-mono text-sm border-l border-zinc-800/40 first:border-0";
+  const cell = "px-3 py-2 text-center font-mono text-sm border-l border-line first:border-0";
 
   return (
     <div>
@@ -52,17 +51,19 @@ export default function MatrixView({ rows }: { rows: MatrixRow[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar proyecto…"
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500/60 sm:max-w-xs"
+          aria-label="Buscar en la matriz"
+          className="w-full rounded-lg border border-line bg-field px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-faint focus:border-accent/60 sm:max-w-xs"
         />
         <div className="flex flex-wrap items-center gap-2">
           {CAP_FILTERS.map((f) => (
             <button
               key={f.id}
               onClick={() => setCap(cap === f.id ? null : f.id)}
+              aria-pressed={cap === f.id}
               className={`rounded-full border px-3 py-1 text-xs transition ${
                 cap === f.id
-                  ? "border-violet-500 bg-violet-500/15 text-violet-200"
-                  : "border-zinc-800 text-zinc-400 hover:border-zinc-600"
+                  ? "border-accent bg-accent-soft text-accent-ink"
+                  : "border-line text-muted hover:border-line-strong hover:text-ink2"
               }`}
             >
               {f.label}
@@ -71,7 +72,8 @@ export default function MatrixView({ rows }: { rows: MatrixRow[] }) {
           <select
             value={minScore}
             onChange={(e) => setMinScore(Number(e.target.value))}
-            className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 outline-none"
+            className="rounded-lg border border-line bg-field px-3 py-1.5 text-xs text-ink2 outline-none"
+            aria-label="Score mínimo"
           >
             <option value={0}>Score ≥ 0</option>
             <option value={20}>Score ≥ 20</option>
@@ -81,18 +83,24 @@ export default function MatrixView({ rows }: { rows: MatrixRow[] }) {
         </div>
       </div>
 
-      <p className="mt-4 font-mono text-xs text-zinc-500">
+      <p className="mt-4 font-mono text-xs text-faint">
         {filtered.length} proyectos con superficie de integración
       </p>
 
-      <div className="mt-3 overflow-x-auto rounded-xl border border-zinc-800/80">
+      <div className="mt-3 overflow-x-auto rounded-xl border border-line">
         <table className="w-full min-w-[720px] border-collapse">
-          <thead className="sticky top-0 bg-zinc-950">
-            <tr className="border-b border-zinc-800 text-left font-mono text-[11px] uppercase text-zinc-500">
+          <thead className="sticky top-14 bg-surface">
+            <tr className="border-b border-line text-left font-mono text-[11px] uppercase text-faint">
               <th className="px-4 py-3">Proyecto</th>
-              <th className="px-3 py-3 text-center" title="Contratos Soroban (vivos/total)">◈ Contratos</th>
-              <th className="px-3 py-3 text-center" title="Tokens mainnet (SAC-componibles)">Tokens</th>
-              <th className="px-3 py-3 text-center" title="Endpoints SEP en stellar.toml">SEP</th>
+              <th className="px-3 py-3 text-center" title="Contratos Soroban (vivos/total)">
+                ◈ Contratos
+              </th>
+              <th className="px-3 py-3 text-center" title="Tokens mainnet (SAC-componibles)">
+                Tokens
+              </th>
+              <th className="px-3 py-3 text-center" title="Endpoints SEP en stellar.toml">
+                SEP
+              </th>
               <th className="px-3 py-3 text-center">GitHub</th>
               <th className="px-3 py-3 text-center">Audit</th>
               <th className="px-4 py-3 text-right">Score</th>
@@ -102,41 +110,39 @@ export default function MatrixView({ rows }: { rows: MatrixRow[] }) {
             {filtered.map((r) => (
               <tr
                 key={r.slug}
-                className="border-b border-zinc-800/40 transition last:border-0 hover:bg-zinc-900/50"
+                className="border-b border-line transition last:border-0 hover:bg-card"
               >
                 <td className="px-4 py-2">
                   <Link
                     href={`/project/${r.slug}`}
-                    className="font-medium text-zinc-200 hover:text-violet-300"
+                    className="font-medium text-ink hover:text-accent-ink"
                   >
                     {r.title}
                   </Link>
-                  <span className="ml-2 text-xs text-zinc-600">{r.category}</span>
+                  <span className="ml-2 text-xs text-faint">{r.category}</span>
                 </td>
                 <td className={cell}>
                   {r.caps.contracts > 0 ? (
-                    <span className={r.caps.contractsAlive > 0 ? "text-emerald-300" : "text-zinc-400"}>
+                    <span className={r.caps.contractsAlive > 0 ? "text-[var(--b-live-ink)]" : "text-muted"}>
                       {r.caps.contractsAlive}/{r.caps.contracts}
                     </span>
                   ) : (
                     "·"
                   )}
                 </td>
-                <td className={`${cell} text-amber-300`}>{fmt(r.caps.tokens)}</td>
-                <td className={`${cell} text-sky-300`}>
+                <td className={`${cell} text-[var(--b-amber-ink)]`}>{fmt(r.caps.tokens)}</td>
+                <td className={`${cell} text-[var(--b-sky-ink)]`}>
                   {r.caps.sepEndpoints.length > 0 ? (
                     <span title={r.caps.sepEndpoints.join(", ")}>{r.caps.sepEndpoints.length}</span>
                   ) : (
                     "·"
                   )}
                 </td>
-                <td className={`${cell} text-zinc-300`}>{fmt(r.caps.github)}</td>
+                <td className={`${cell} text-ink2`}>{fmt(r.caps.github)}</td>
                 <td className={cell}>
-                  {r.caps.audited ? <span className="text-emerald-300">✓</span> : "·"}
+                  {r.caps.audited ? <span className="text-[var(--b-live-ink)]">✓</span> : "·"}
                 </td>
-                <td className="px-4 py-2 text-right font-mono text-sm text-violet-300">
-                  {r.score}
-                </td>
+                <td className="px-4 py-2 text-right font-mono text-sm text-accent-ink">{r.score}</td>
               </tr>
             ))}
           </tbody>

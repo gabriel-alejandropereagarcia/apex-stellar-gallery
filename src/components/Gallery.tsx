@@ -59,19 +59,29 @@ export default function Gallery({
   }, [projects, query, category, tag, region, onlyScf, onlyAudited, onlyOnchain, onlyLive, onlySep, sort]);
 
   const selectCls =
-    "rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-violet-500/60";
+    "rounded-lg border border-line bg-field px-3 py-2 text-sm text-ink2 outline-none transition focus:border-accent/60";
+
+  const chipCls = (active: boolean, accent = false) =>
+    `rounded-full border px-3 py-1 text-xs transition ${
+      active
+        ? accent
+          ? "border-accent/60 bg-accent-soft text-accent-ink"
+          : "border-accent bg-accent-soft text-accent-ink"
+        : "border-line text-muted hover:border-line-strong hover:text-ink2"
+    }`;
 
   return (
-    <section className="pt-8">
+    <section className="relative pt-8">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar proyecto, tag, descripción…"
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500/60 lg:max-w-md"
+          aria-label="Buscar proyectos"
+          className="w-full rounded-lg border border-line bg-field px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-faint focus:border-accent/60 lg:max-w-md"
         />
         <div className="flex flex-wrap gap-2">
-          <select value={tag} onChange={(e) => setTag(e.target.value)} className={selectCls}>
+          <select value={tag} onChange={(e) => setTag(e.target.value)} className={selectCls} aria-label="Filtrar por tag">
             <option value="">Tag: todos</option>
             {tags.map((t) => (
               <option key={t} value={t}>
@@ -79,7 +89,7 @@ export default function Gallery({
               </option>
             ))}
           </select>
-          <select value={region} onChange={(e) => setRegion(e.target.value)} className={selectCls}>
+          <select value={region} onChange={(e) => setRegion(e.target.value)} className={selectCls} aria-label="Filtrar por región">
             <option value="">Región: todas</option>
             {regions.map((r) => (
               <option key={r} value={r}>
@@ -91,6 +101,7 @@ export default function Gallery({
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
             className={selectCls}
+            aria-label="Ordenar"
           >
             <option value="name">A–Z</option>
             <option value="activity">Actividad on-chain</option>
@@ -102,52 +113,45 @@ export default function Gallery({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => setCategory(null)}
-          className={`rounded-full border px-3 py-1 text-xs transition ${
-            category === null
-              ? "border-violet-500 bg-violet-500/15 text-violet-200"
-              : "border-zinc-800 text-zinc-400 hover:border-zinc-600"
-          }`}
-        >
+        <button onClick={() => setCategory(null)} className={chipCls(category === null)}>
           Todas
         </button>
         {categories.map(([name, count]) => (
           <button
             key={name}
             onClick={() => setCategory(category === name ? null : name)}
-            className={`rounded-full border px-3 py-1 text-xs transition ${
-              category === name
-                ? "border-violet-500 bg-violet-500/15 text-violet-200"
-                : "border-zinc-800 text-zinc-400 hover:border-zinc-600"
-            }`}
+            className={chipCls(category === name)}
+            aria-pressed={category === name}
           >
-            {name} <span className="text-zinc-600">{count}</span>
+            {name} <span className="text-faint">{count}</span>
           </button>
         ))}
-        <span className="mx-1 hidden h-4 w-px bg-zinc-800 sm:block" />
-        {[
-          ["SCF", onlyScf, setOnlyScf],
-          ["Auditados", onlyAudited, setOnlyAudited],
-          ["On-chain", onlyOnchain, setOnlyOnchain],
-          ["Activos ahora", onlyLive, setOnlyLive],
-          ["SEP-1", onlySep, setOnlySep],
-        ].map(([label, active, setter]) => (
+        <span className="mx-1 hidden h-4 w-px bg-line sm:block" />
+        {(
+          [
+            ["SCF", onlyScf, setOnlyScf],
+            ["Auditados", onlyAudited, setOnlyAudited],
+            ["On-chain", onlyOnchain, setOnlyOnchain],
+            ["Activos ahora", onlyLive, setOnlyLive],
+            ["SEP-1", onlySep, setOnlySep],
+          ] as const
+        ).map(([label, active, setter]) => (
           <button
-            key={label as string}
-            onClick={() => (setter as (v: boolean) => void)(!(active as boolean))}
+            key={label}
+            onClick={() => setter(!active)}
+            aria-pressed={active}
             className={`rounded-full border px-3 py-1 text-xs transition ${
               active
-                ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300"
-                : "border-zinc-800 text-zinc-400 hover:border-zinc-600"
+                ? "border-transparent bg-[var(--b-live-bg)] text-[var(--b-live-ink)]"
+                : "border-line text-muted hover:border-line-strong hover:text-ink2"
             }`}
           >
-            {label as string}
+            {label}
           </button>
         ))}
       </div>
 
-      <p className="mt-6 font-mono text-xs text-zinc-500">
+      <p className="mt-6 font-mono text-xs text-faint">
         {filtered.length} / {projects.length} proyectos
       </p>
 
@@ -158,8 +162,8 @@ export default function Gallery({
       </div>
 
       {!filtered.length && (
-        <p className="mt-16 text-center text-zinc-500">
-          Sin resultados — ajusta los filtros o la búsqueda.
+        <p className="mt-16 text-center text-muted">
+          Sin resultados — ajustá los filtros o la búsqueda.
         </p>
       )}
     </section>

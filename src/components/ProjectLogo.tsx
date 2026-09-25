@@ -17,7 +17,7 @@ export default function ProjectLogo({
   if (!src || failed) {
     return (
       <div
-        className="flex shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-gradient-to-br from-violet-600/30 to-zinc-800 font-mono font-semibold text-violet-300"
+        className="flex shrink-0 items-center justify-center rounded-lg border border-line bg-accent-soft font-mono font-semibold text-accent-ink"
         style={{ width: size, height: size, fontSize: size * 0.45 }}
         aria-hidden
       >
@@ -35,7 +35,7 @@ export default function ProjectLogo({
       height={size}
       loading="lazy"
       onError={() => setFailed(true)}
-      className="shrink-0 rounded-lg border border-zinc-800 bg-zinc-900 object-contain p-1"
+      className="shrink-0 rounded-lg border border-line bg-field object-contain p-1"
       style={{ width: size, height: size }}
     />
   );

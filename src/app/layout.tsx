@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import SiteNav from "@/components/SiteNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,18 +14,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "APEX · Stellar Ecosystem Gallery",
+  title: "StellarScope · Galería del ecosistema Stellar",
   description:
-    "Galería indexada del ecosistema Stellar: proyectos, contratos Soroban, SCF y auditorías en un solo lugar.",
+    "Todos los proyectos Stellar indexados y verificados on-chain: contratos Soroban vivos, endpoints SEP, SCF y actividad real via Hubble.",
 };
+
+const themeInit = `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||(!t&&matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light')}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+      </head>
+      <body className="flex min-h-full flex-col bg-surface text-ink">
+        <SiteNav />
+        <div className="flex-1">{children}</div>
+        <footer className="border-t border-line py-8">
+          <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-3 px-4 font-mono text-xs text-faint sm:px-6">
+            <span>StellarScope — ecosistema Stellar indexado y verificado on-chain</span>
+            <span className="flex-1" />
+            <span>
+              datos: lumenloop db · soroban rpc · stellar.expert · hubble/bigquery
+            </span>
+          </div>
+        </footer>
+      </body>
     </html>
   );
 }

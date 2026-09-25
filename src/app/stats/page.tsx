@@ -5,16 +5,16 @@ import type { Project } from "@/lib/types";
 function Bar({ label, value, max, hint }: { label: string; value: number; max: number; hint?: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="w-44 truncate text-sm text-zinc-400" title={hint ?? label}>
+      <span className="w-44 truncate text-sm text-muted" title={hint ?? label}>
         {label}
       </span>
-      <div className="h-5 flex-1 overflow-hidden rounded bg-zinc-900">
+      <div className="h-5 flex-1 overflow-hidden rounded bg-field">
         <div
-          className="h-full rounded bg-gradient-to-r from-violet-600 to-violet-400"
+          className="h-full rounded bg-gradient-to-r from-accent/70 to-accent-ink"
           style={{ width: `${max ? (value / max) * 100 : 0}%` }}
         />
       </div>
-      <span className="w-14 text-right font-mono text-sm text-zinc-300">{value}</span>
+      <span className="w-14 text-right font-mono text-sm text-ink2">{value}</span>
     </div>
   );
 }
@@ -22,8 +22,8 @@ function Bar({ label, value, max, hint }: { label: string; value: number; max: n
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-10">
-      <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">{title}</h2>
-      <div className="mt-4 space-y-2 rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-5">
+      <h2 className="font-mono text-xs uppercase tracking-widest text-faint">{title}</h2>
+      <div className="mt-4 space-y-2 rounded-xl border border-line bg-card p-5">
         {children}
       </div>
     </section>
@@ -64,17 +64,11 @@ export default function StatsPage() {
   });
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 pb-24 sm:px-6">
-      <Link
-        href="/"
-        className="mt-8 inline-block font-mono text-xs text-zinc-500 transition hover:text-violet-300"
-      >
-        ← volver a la galería
-      </Link>
-
-      <header className="mt-6">
-        <h1 className="text-3xl font-bold tracking-tight">Ecosistema en números</h1>
-        <p className="mt-2 text-sm text-zinc-500">
+    <main className="relative mx-auto w-full max-w-4xl px-4 pb-24 sm:px-6">
+      <div className="glow-orb right-0 top-10 h-52 w-52" aria-hidden />
+      <header className="mt-10">
+        <h1 className="gradient-title text-3xl font-bold tracking-tight">Ecosistema en números</h1>
+        <p className="mt-2 text-sm text-faint">
           Snapshot del dataset {meta.source} · ledger {chainMeta.ledger.toLocaleString()} ·{" "}
           {new Date(chainMeta.generatedAt).toLocaleDateString("es")}
         </p>
@@ -87,9 +81,9 @@ export default function StatsPage() {
           ["Contratos vivos", `${contractsAlive}/${contractsChecked}`],
           ["Con stellar.toml", projects.filter((p) => p.sep).length],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3">
-            <dt className="text-xs text-zinc-500">{label}</dt>
-            <dd className="mt-1 font-mono text-xl font-semibold text-violet-300">{value}</dd>
+          <div key={label} className="rounded-xl border border-line bg-card px-4 py-3">
+            <dt className="text-xs text-faint">{label}</dt>
+            <dd className="mt-1 font-mono text-xl font-semibold text-accent-ink">{value}</dd>
           </div>
         ))}
       </div>

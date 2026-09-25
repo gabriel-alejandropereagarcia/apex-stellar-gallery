@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { projects, capabilities, integrationScore } from "@/lib/data";
 import MatrixView from "@/components/MatrixView";
 
-export const metadata = { title: "APEX · Matriz de integración" };
+export const metadata = { title: "StellarScope · Matriz de integración" };
 
 export default function MatrixPage() {
   const rows = projects
@@ -16,20 +15,14 @@ export default function MatrixPage() {
     .filter((r) => r.score > 0);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pb-24 sm:px-6">
-      <Link
-        href="/"
-        className="mt-8 inline-block font-mono text-xs text-zinc-500 transition hover:text-violet-300"
-      >
-        ← volver a la galería
-      </Link>
-
-      <header className="mt-6">
-        <h1 className="text-3xl font-bold tracking-tight">Matriz de integración</h1>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-400">
+    <main className="relative mx-auto w-full max-w-6xl px-4 pb-24 sm:px-6">
+      <div className="glow-orb right-0 top-8 h-52 w-52" aria-hidden />
+      <header className="mt-10">
+        <h1 className="gradient-title text-3xl font-bold tracking-tight">Matriz de integración</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted">
           Qué expone cada proyecto para construir encima: contratos Soroban llamables, tokens
-          componibles (SAC), endpoints SEP publicados en <code>stellar.toml</code>, repos públicos
-          y auditorías. Antes de construir algo, mirá si ya existe y podés integrarte.
+          componibles (SAC), endpoints SEP publicados en <code className="text-accent-ink">stellar.toml</code>,
+          repos públicos y auditorías. Antes de construir algo, mirá si ya existe y podés integrarte.
         </p>
       </header>
 

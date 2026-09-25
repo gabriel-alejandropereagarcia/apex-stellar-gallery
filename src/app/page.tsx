@@ -3,35 +3,24 @@ import Gallery from "@/components/Gallery";
 
 export default function Home() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6">
-      <header className="border-b border-zinc-800/80 pb-10 pt-12">
-        <div className="flex items-center justify-between">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-400">
-            apex · stellar ecosystem
-          </p>
-          <div className="flex gap-2">
-            <a
-              href="/matrix"
-              className="rounded-lg border border-zinc-800 px-3 py-1.5 font-mono text-xs text-zinc-400 transition hover:border-violet-500/50 hover:text-violet-300"
-            >
-              matriz →
-            </a>
-            <a
-              href="/stats"
-              className="rounded-lg border border-zinc-800 px-3 py-1.5 font-mono text-xs text-zinc-400 transition hover:border-violet-500/50 hover:text-violet-300"
-            >
-              stats →
-            </a>
-          </div>
-        </div>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+    <main className="relative mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6">
+      {/* glow ambiental */}
+      <div className="glow-orb left-1/2 top-0 h-64 w-[42rem] -translate-x-1/2" aria-hidden />
+      <div className="glow-orb -left-20 top-40 h-48 w-48 opacity-60" aria-hidden />
+
+      <header className="relative border-b border-line pb-10 pt-14">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent-ink">
+          ecosistema stellar · indexado + verificado on-chain
+        </p>
+        <h1 className="gradient-title mt-4 text-4xl font-bold tracking-tight sm:text-6xl">
           Galería de proyectos Stellar
         </h1>
-        <p className="mt-4 max-w-2xl text-zinc-400">
-          Todo el ecosistema indexado en un solo lugar. Filtra por categoría, descubre qué ya
-          existe e intégrate con soluciones previas en vez de reinventarlas.
+        <p className="mt-5 max-w-2xl leading-relaxed text-muted">
+          Todo el ecosistema en un solo lugar, con señal de vida real desde la blockchain.
+          Filtrá por categoría, descubrí qué ya existe e integrate con soluciones previas
+          en vez de reinventarlas.
         </p>
-        <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <dl className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[
             ["Proyectos", meta.totals.projects],
             ["Categorías", categories.length],
@@ -42,10 +31,10 @@ export default function Home() {
           ].map(([label, value]) => (
             <div
               key={label}
-              className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3"
+              className="rounded-xl border border-line bg-card px-4 py-3"
             >
-              <dt className="text-xs text-zinc-500">{label}</dt>
-              <dd className="mt-1 font-mono text-2xl font-semibold text-violet-300">{value}</dd>
+              <dt className="text-xs text-faint">{label}</dt>
+              <dd className="mt-1 font-mono text-2xl font-semibold text-accent-ink">{value}</dd>
             </div>
           ))}
         </dl>
