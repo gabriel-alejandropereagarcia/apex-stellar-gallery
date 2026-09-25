@@ -9,12 +9,20 @@ export default function Home() {
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-400">
             apex · stellar ecosystem
           </p>
-          <a
-            href="/stats"
-            className="rounded-lg border border-zinc-800 px-3 py-1.5 font-mono text-xs text-zinc-400 transition hover:border-violet-500/50 hover:text-violet-300"
-          >
-            stats →
-          </a>
+          <div className="flex gap-2">
+            <a
+              href="/matrix"
+              className="rounded-lg border border-zinc-800 px-3 py-1.5 font-mono text-xs text-zinc-400 transition hover:border-violet-500/50 hover:text-violet-300"
+            >
+              matriz →
+            </a>
+            <a
+              href="/stats"
+              className="rounded-lg border border-zinc-800 px-3 py-1.5 font-mono text-xs text-zinc-400 transition hover:border-violet-500/50 hover:text-violet-300"
+            >
+              stats →
+            </a>
+          </div>
         </div>
         <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
           Galería de proyectos Stellar

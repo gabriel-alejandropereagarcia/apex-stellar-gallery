@@ -2,16 +2,17 @@
 
 import { useMemo, useState } from "react";
 import type { Project } from "@/lib/types";
-import { activityScore, isLive } from "@/lib/data";
+import { activityScore, integrationScore, isLive } from "@/lib/data";
 import ProjectCard from "./ProjectCard";
 
-type SortKey = "name" | "scf" | "contracts" | "activity";
+type SortKey = "name" | "scf" | "contracts" | "activity" | "integrate";
 
 const SORTERS: Record<SortKey, (a: Project, b: Project) => number> = {
   name: (a, b) => a.title.localeCompare(b.title),
   scf: (a, b) => (b.scf?.total ?? 0) - (a.scf?.total ?? 0),
   contracts: (a, b) => b.contracts.length - a.contracts.length,
   activity: (a, b) => activityScore(b) - activityScore(a),
+  integrate: (a, b) => integrationScore(b) - integrationScore(a),
 };
 
 export default function Gallery({
@@ -93,6 +94,7 @@ export default function Gallery({
           >
             <option value="name">A–Z</option>
             <option value="activity">Actividad on-chain</option>
+            <option value="integrate">Integrabilidad</option>
             <option value="scf">Fondos SCF</option>
             <option value="contracts">Contratos</option>
           </select>

@@ -95,6 +95,62 @@ export default async function ProjectPage({ params }: PageProps<"/project/[slug]
         ))}
       </div>
 
+      {(project.contracts.length > 0 || project.tokens.length > 0 || project.sep || project.links.github?.length) && (
+        <section className="mt-8 rounded-xl border border-violet-500/25 bg-violet-500/5 p-5">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-violet-400">
+            Superficie de integración — qué podés reusar
+          </h2>
+          <ul className="mt-3 space-y-1.5 text-sm text-zinc-300">
+            {project.contracts.length > 0 && (
+              <li>
+                <span className="text-sky-300">{project.contracts.length} contratos Soroban</span>
+                {project.chain ? (
+                  <span className="text-zinc-400">
+                    {" "}({project.chain.contractsAlive} vivos en mainnet, llamables via RPC)
+                  </span>
+                ) : (
+                  <span className="text-zinc-400"> — llamables via RPC</span>
+                )}
+              </li>
+            )}
+            {project.tokens.length > 0 && (
+              <li>
+                <span className="text-amber-300">
+                  {project.tokens.map((t) => t.code).filter(Boolean).join(", ")}
+                </span>
+                <span className="text-zinc-400"> — tokens componibles (SAC) en mainnet</span>
+              </li>
+            )}
+            {project.sep && project.sep.sepEndpoints.length > 0 && (
+              <li>
+                <span className="text-zinc-200">Endpoints SEP publicados:</span>
+                <span className="ml-1 font-mono text-xs text-zinc-400">
+                  {project.sep.sepEndpoints.join(", ")}
+                </span>
+              </li>
+            )}
+            {project.links.github?.length ? (
+              <li>
+                <span className="text-zinc-200">Código abierto:</span>
+                <a
+                  href={project.links.github[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 text-zinc-400 underline decoration-zinc-700 hover:text-violet-300"
+                >
+                  {project.links.github[0].replace("https://", "")}
+                </a>
+              </li>
+            ) : null}
+            {project.audits.length > 0 && (
+              <li className="text-emerald-300/90">
+                Auditado — superficie verificada por terceros
+              </li>
+            )}
+          </ul>
+        </section>
+      )}
+
       {linkEntries.length > 0 && (
         <section className="mt-8">
           <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">Links</h2>

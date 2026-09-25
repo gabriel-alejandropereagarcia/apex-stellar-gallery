@@ -74,3 +74,39 @@ export function isLive(p: Project): boolean {
   if (!c) return false;
   return c.contractsAlive > 0 || c.tokens.some((t) => t.trustlines > 0 || t.payments > 0);
 }
+
+export interface IntegrationCaps {
+  contracts: number; // contratos Soroban publicados
+  contractsAlive: number; // vivos verificados via RPC
+  tokens: number; // assets mainnet componibles (SAC)
+  sepEndpoints: string[]; // endpoints SEP descubiertos en stellar.toml
+  github: number; // repos/orgs públicos
+  audited: boolean; // tiene auditoría publicada
+}
+
+/** Superficie de integración: qué puede reusar otro builder de este proyecto. */
+export function capabilities(p: Project): IntegrationCaps {
+  return {
+    contracts: p.contracts.length,
+    contractsAlive: p.chain?.contractsAlive ?? 0,
+    tokens: p.tokens.length,
+    sepEndpoints: p.sep?.sepEndpoints ?? [],
+    github: p.links.github?.length ?? 0,
+    audited: p.audits.length > 0,
+  };
+}
+
+/** Score de "integrabilidad" 0-100: cuánto ofrece el proyecto para construir encima. */
+export function integrationScore(p: Project): number {
+  const c = capabilities(p);
+  return Math.min(
+    100,
+    Math.round(
+      Math.min(40, c.contractsAlive * 4 + Math.min(8, c.contracts * 1)) +
+        Math.min(20, c.tokens * 4) +
+        Math.min(25, c.sepEndpoints.length * 5) +
+        Math.min(8, c.github * 2) +
+        (c.audited ? 7 : 0),
+    ),
+  );
+}
