@@ -1,4 +1,4 @@
-# APEX · Stellar Ecosystem Gallery
+# · Stellar Ecosystem Gallery
 
 **Todos los proyectos del ecosistema Stellar en un solo lugar — verificados contra la propia blockchain.**
 
