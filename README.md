@@ -133,3 +133,4 @@ commit del snapshot. `enrich:hubble` se activa si configurás el secret **`GCP_S
 - Catálogo base: [`lumenloop/stellar-ecosystem-db`](https://github.com/lumenloop/stellar-ecosystem-db) (open data)
 - On-chain: Soroban RPC público, StellarExpert Open API (MIT), Hubble (SDF + BigQuery)
 - Proponer correcciones: PR al repo o upstream a LumenLoop
+- Mantenido por [@gabriel_apg](https://x.com/gabriel_apg) — proyecto comunitario, sin fines de lucro

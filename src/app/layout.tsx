@@ -37,10 +37,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="border-t border-line py-8">
           <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-3 px-4 font-mono text-xs text-faint sm:px-6">
             <span>StellarScope — ecosistema Stellar indexado y verificado on-chain</span>
+            <span className="hidden text-faint sm:inline">· open source, sin fines de lucro</span>
             <span className="flex-1" />
             <span>
               datos: lumenloop db · soroban rpc · stellar.expert · hubble/bigquery
             </span>
+            <a
+              href="https://x.com/gabriel_apg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted transition hover:text-accent-ink"
+            >
+              by @gabriel_apg ↗
+            </a>
           </div>
         </footer>
       </body>
