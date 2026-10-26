@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-19T11:30:57.287Z",
+  "generatedAt": "2026-10-26T11:49:48.544Z",
   "source": "lumenloop/stellar-ecosystem-db",
   "totals": {
     "projects": 840,
     "scfFunded": 701,
     "audited": 56,
     "withContracts": 26,
-    "contracts": 393,
+    "contracts": 394,
     "tags": 84
   },
   "categories": {
