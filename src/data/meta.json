@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-26T11:49:48.544Z",
+  "generatedAt": "2026-11-02T14:08:50.236Z",
   "source": "lumenloop/stellar-ecosystem-db",
   "totals": {
-    "projects": 840,
+    "projects": 841,
     "scfFunded": 701,
     "audited": 56,
     "withContracts": 26,
@@ -14,6 +14,7 @@
     "Financial Protocols": 148,
     "Applications": 373,
     "Developer Tooling": 156,
-    "Education & Community": 31
+    "Education & Community": 31,
+    "Uncategorized": 1
   }
 }
